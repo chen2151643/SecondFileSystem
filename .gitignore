@@ -1,0 +1,8 @@
+*.img
+
+x64/
+Debug/
+
+SecondFileSys.vcxproj.user
+SecondFileSys.vcxproj.filters
+SecondFileSys.vcxproj
