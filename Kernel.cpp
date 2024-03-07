@@ -1,11 +1,11 @@
 #include "Kernel.h"
 
 Kernel Kernel::instance; /* Kernel 单体类实例 */
-DiskDriver g_DiskDriver;
-BufferManager g_BufferManager;
-FileSystem g_FileSystem;
-FileManager g_FileManager;
-User g_User;
+extern DiskDriver g_DiskDriver;
+extern BufferManager g_BufferManager;
+extern FileSystem g_FileSystem;
+extern FileManager g_FileManager;
+extern User g_User;
 
 Kernel::Kernel(){}
 Kernel::~Kernel(){}
@@ -20,7 +20,10 @@ void Kernel::Initialize()
 {
 	// 初始化磁盘镜像文件
 	InitDiskDriver();
-
+	// 初始化缓存
+	InitBuffer();
+	// 初始化文件系统
+	InitFileSystem();
 }
 
 /* 磁盘文件初始化 */
@@ -30,6 +33,30 @@ void Kernel::InitDiskDriver() {
 	cout << "Initialize Disk_img...";
 	this->GetDiskDriver().Initialize();
 
+	cout << "Done" << endl;
+}
+
+void Kernel::InitBuffer()
+{
+	this->m_BufferManager = &g_BufferManager;
+
+	cout << "Initialize Buffer...";
+	this->GetBufferManager().Initialize();
+	cout << "Done" << endl;
+}
+
+
+void Kernel::InitFileSystem()
+{
+	this->m_FileSystem = &g_FileSystem;
+	this->m_FileManager = &g_FileManager;
+
+	cout << "Initialize File System...";
+	this->GetFileSystem().Initialize();
+	cout << "Done" << endl;
+
+	cout << "Initialize File Manager...";
+	this->GetFileManager().Initialize();
 	cout << "Done" << endl;
 }
 

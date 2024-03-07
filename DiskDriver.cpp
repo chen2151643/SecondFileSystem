@@ -3,8 +3,16 @@
 #include "FileSystem.h"
 #include "INode.h"
 
-DiskDriver::DiskDriver(){}
-DiskDriver::~DiskDriver(){}
+DiskDriver g_DiskDriver;
+
+DiskDriver::DiskDriver(){
+	nblkdev = 0;
+}
+DiskDriver::~DiskDriver(){
+	for (int i = 0; i < DiskDriver::DISK_MAX_CNT; i++)
+		if (d_tab[i] != NULL)
+			delete d_tab[i];
+}
 
 /*
 void show_size()
@@ -104,17 +112,18 @@ int DiskDriver::disk_init()
 	dinode[1].d_mode |= Inode::IEXEC; //对文件的执行权限
 	dinode->d_addr[0] = FileSystem::DATA_ZONE_END_SECTOR;
 	dinode[1].d_nlink = 1;
-	dinode[1].d_size = 3 * sizeof(DirectoryEntry);
+	dinode[1].d_size = 4 * sizeof(DirectoryEntry);
 
-	DirectoryEntry dir1[3] = {
+	DirectoryEntry dir1[4] = {
 		{1,"."},
 		{1,".."},
 		{2,"home"},
+		{3,"etc"}
 	};
-	// home目录
+	// /home目录
 	dinode[2].d_mode = Inode::IFDIR; //文件类型为目录
 	dinode[2].d_mode |= Inode::IEXEC; //对文件的执行权限
-	dinode->d_addr[0] = FileSystem::DATA_ZONE_END_SECTOR-1;
+	dinode->d_addr[0] = FileSystem::DATA_ZONE_END_SECTOR - 1;
 	dinode[2].d_nlink = 1;
 	dinode[2].d_size = 2 * sizeof(DirectoryEntry);
 
@@ -122,6 +131,25 @@ int DiskDriver::disk_init()
 		{2,"."},
 		{1,".."},
 	};
+	// /etc目录
+	dinode[3].d_mode = Inode::IFDIR; //文件类型为目录
+	dinode[3].d_mode |= Inode::IEXEC; //对文件的执行权限
+	dinode->d_addr[0] = FileSystem::DATA_ZONE_END_SECTOR - 2;
+	dinode[3].d_nlink = 1;
+	dinode[3].d_size = 3 * sizeof(DirectoryEntry);
+
+	DirectoryEntry dir3[3] = {
+		{3,"."},
+		{1,".."},
+		{4,"mount.txt"}
+	};
+	// /etc/mount.txt文件
+	dinode[4].d_mode = 0; //文件类型为目录
+	dinode[4].d_mode |= Inode::IREAD; //对文件的读权限
+	dinode[4].d_mode |= Inode::IWRITE; //对文件的读权限
+	dinode->d_addr[0] = FileSystem::DATA_ZONE_END_SECTOR - 3;
+	dinode[4].d_nlink = 1;
+	dinode[4].d_size = 0;
 
 	char* datablock = new char[FileSystem::DATA_ZONE_SIZE * 512];
 	memset(datablock, 0, FileSystem::DATA_ZONE_SIZE * 512);
@@ -131,6 +159,8 @@ int DiskDriver::disk_init()
 	//inode区前2块，data区末2块
 	memcpy(datablock + 512 * (FileSystem::DATA_ZONE_SIZE - 1), dir1, dinode[1].d_size);
 	memcpy(datablock + 512 * (FileSystem::DATA_ZONE_SIZE - 2), dir2, dinode[2].d_size);
+	memcpy(datablock + 512 * (FileSystem::DATA_ZONE_SIZE - 3), dir3, dinode[3].d_size);
+	// #4号不用，因为初始为空
 
 	// 写入superblock
 	// 写入inode区
@@ -160,6 +190,7 @@ void DiskDriver::Initialize()
 			cout << "创建磁盘文件失败，failed" << endl;
 			exit(-1);
 		}
+		d_tab[nblkdev++] =new Devtab(DiskDriver::DISK_FILE_NAME);
 		disk_init(); // 磁盘格式化
 		img_file.close(); //关闭并保存
 	}
@@ -167,6 +198,30 @@ void DiskDriver::Initialize()
 		// 文件已存在，则说明有一块初始化过的磁盘文件
 		// 磁盘初始化已完成
 		// 若存在则成功打开，需要关闭
+		/*
+			由于考虑加入挂载功能，为了在初始化时获取已挂载的硬盘信息
+			本系统将挂载信息放在主硬盘根目录下  "/etc/mount.txt" 中
+			所以之后在完成文件读写后，需在此处补上读挂载配置文件的内容
+
+		*/
 		img_file.close();
 	}
+}
+
+Devtab::Devtab(const char* name)
+{
+	this->d_active = 0;
+	this->d_errcnt = 0;
+	this->b_forw = NULL;
+	this->b_back = NULL;
+	this->d_actf = NULL;
+	this->d_actl = NULL;
+
+	int i = 0;
+	while ((dev_name[i++] = name[i++]) != 0);
+	// 将名字赋给dev_name
+}
+Devtab::~Devtab()
+{
+	//nothing to do here
 }
