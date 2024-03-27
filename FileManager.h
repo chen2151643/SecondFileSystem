@@ -11,6 +11,9 @@
 class FileManager
 {
 public:
+	//十进制为16877，用于mkdir时调用MakNode时给pInode的mode赋值
+	//16877为Inode的状态位，表示owner可rwx，而group和other只能r-x
+	static const int DEFAULT_MODE = 040755; 
 	/* 目录搜索模式，用于NameI()函数 */
 	enum DirectorySearchMode
 	{
@@ -91,21 +94,6 @@ public:
 	void Rdwr(enum File::FileFlags mode);
 
 	/*
-	 * @comment Pipe()管道建立系统调用处理过程
-	 */
-	void Pipe();
-
-	/*
-	 * @comment 管道读操作
-	 */
-	void ReadP(File* pFile);
-
-	/*
-	 * @comment 管道写操作
-	 */
-	void WriteP(File* pFile);
-
-	/*
 	 * @comment 目录搜索，将路径转化为相应的Inode，
 	 * 返回上锁后的Inode
 	 */
@@ -135,17 +123,6 @@ public:
 	 * @comment 检查对文件或目录的搜索、访问权限，作为系统调用的辅助函数
 	 */
 	int Access(Inode* pInode, unsigned int mode);
-
-	/*
-	 * @comment 检查文件是否属于当前用户
-	 */
-	Inode* Owner();
-
-	/* 改变文件访问模式 */
-	void ChMod();
-
-	/* 改变文件文件所有者user ID及其group ID */
-	void ChOwn();
 
 	/* 改变当前工作目录 */
 	void ChDir();

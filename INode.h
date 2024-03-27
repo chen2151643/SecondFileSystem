@@ -50,12 +50,6 @@ public:
 
 	static const int PIPSIZ = SMALL_FILE_BLOCK * BLOCK_SIZE;
 
-	/* static member */
-	static int rablock;		/* 顺序读时，使用预读技术读入文件的下一字符块，rablock记录了下一逻辑块号
-							经过bmap转换得到的物理盘块号。将rablock作为静态变量的原因：调用一次bmap的开销
-							对当前块和预读块的逻辑块号进行转换，bmap返回当前块的物理盘块号，并且将预读块
-							的物理盘块号保存在rablock中。 */
-
 							/* Functions */
 public:
 	/* Constructors */
@@ -76,17 +70,6 @@ public:
 	 * @comment 将文件的逻辑块号转换成对应的物理盘块号
 	 */
 	int Bmap(int lbn);
-
-	/*
-	 * @comment 对特殊字符设备、块设备文件，调用该设备注册在块设备开关表
-	 * 中的设备初始化程序
-	 */
-	void OpenI(int mode);
-	/*
-	 * @comment 对特殊字符设备、块设备文件。如果对该设备的引用计数为0，
-	 * 则调用该设备的关闭程序
-	 */
-	void CloseI(int mode);
 
 	/*
 	 * @comment 更新外存Inode的最后的访问时间、修改时间
@@ -111,7 +94,7 @@ public:
 	unsigned int i_flag;	/* 状态的标志位，定义见enum INodeFlag */
 	unsigned int i_mode;	/* 文件工作方式信息 */
 
-	int		i_count;		/* 引用计数 */
+	int		i_count;		/* 引用计数,内存Inode引用计数为零，则该Inode表示空闲 */
 	int		i_nlink;		/* 文件联结计数，即该文件在目录树中不同路径名的数量 */
 
 	short	i_dev;			/* 外存inode所在存储设备的设备号 */

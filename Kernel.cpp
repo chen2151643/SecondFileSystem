@@ -6,6 +6,7 @@ extern BufferManager g_BufferManager;
 extern FileSystem g_FileSystem;
 extern FileManager g_FileManager;
 extern User g_User;
+extern InodeTable g_InodeTable;
 
 Kernel::Kernel(){}
 Kernel::~Kernel(){}
@@ -24,6 +25,27 @@ void Kernel::Initialize()
 	InitBuffer();
 	// 初始化文件系统
 	InitFileSystem();
+	// 初始化系统
+	// 完善后初始化的文件结构在此处写入
+	InitSystem();
+}
+
+/* 初始化 FileManager 及 User 中部分结构 */
+void Kernel::InitSystem()
+{
+	this->m_User = &g_User;
+	cout << "Initialize System...";
+	FileManager* fileManager = &Kernel::Instance().GetFileManager();
+	fileManager->rootDirInode = g_InodeTable.IGet(DiskDriver::ROOTDEV, FileSystem::ROOTINO);
+	Kernel::Instance().GetFileSystem().LoadSuperBlock();
+	User* u = &Kernel::Instance().GetUser();
+	u->u_error = User::_NOERROR;
+	u->u_cdir = g_InodeTable.IGet(DiskDriver::ROOTDEV, FileSystem::ROOTINO);
+	u->u_pdir = NULL;
+	strcpy_s(u->u_curdir, "/");
+	u->u_dirp = "/";
+	memset(u->u_arg, 0, sizeof(u->u_arg));
+	cout << "Done" << endl;
 }
 
 /* 磁盘文件初始化 */

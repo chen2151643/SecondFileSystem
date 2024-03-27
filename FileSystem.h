@@ -38,6 +38,24 @@ public:
  * 装配块用于实现子文件系统与
  * 根文件系统的连接。
  */
+ /*
+  * 文件系统装配块(Mount)的定义。
+  * 装配块用于实现子文件系统与
+  * 根文件系统的连接。
+  */
+class Mount
+{
+	/* Functions */
+public:
+	Mount();
+	~Mount();
+
+	/* Members */
+public:
+	short 		m_dev;		/* 文件系统设备号 */
+	SuperBlock* m_spb;		/* 指向文件系统的Super Block对象在内存中的副本 */
+	Inode* m_inodep;	/* 指向挂载子文件系统的内存INode */
+};
 
 /*
  * 文件系统类(FileSystem)管理文件存储设备中
@@ -63,7 +81,7 @@ public:
 	static const int DATA_ZONE_SIZE = 18000 - DATA_ZONE_START_SECTOR;	/* 数据区占据的扇区数量 */
 
 	/* 为初始化如根目录等初始目录结构，增设参数 */
-	static const int DATA_INIT_SECTOR = 4;
+	static const int DATA_INIT_SECTOR = 3;
 	static const int INODE_INIT_NUM = 4;
 
 
@@ -78,6 +96,11 @@ public:
 	 * @comment 初始化成员变量
 	 */
 	void Initialize();
+
+	/*
+	 * @comment 查找文件系统装配表，搜索指定Inode对应的Mount装配块
+	 */
+	Mount* GetMount(Inode* pInode);
 
 	/*
 	* @comment 系统初始化时读入SuperBlock
@@ -114,6 +137,11 @@ public:
 	 * @comment 释放存储设备dev上编号为blkno的磁盘块
 	 */
 	void Free(short dev, int blkno);
+
+	/* Members */
+public:
+	Mount m_Mount[NMOUNT];		/* 文件系统装配块表，Mount[0]用于根文件系统 */
+
 
 private:
 	BufferManager* m_BufferManager;		/* FileSystem类需要缓存管理模块(BufferManager)提供的接口 */

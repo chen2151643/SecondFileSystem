@@ -10,6 +10,7 @@ public:
 	~Kernel();
 	static Kernel& Instance();
 	void Initialize(); /* 该函数完成初始化内核大部分数据结构的初始化 */
+	void InitSystem(); /* 初始化系统 */
 	BufferManager& GetBufferManager();
 	FileSystem & GetFileSystem();
 	FileManager& GetFileManager();

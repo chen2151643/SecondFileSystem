@@ -21,16 +21,15 @@ public:
 	int		padding;		/* 4字节填充，使得b_forw和b_back在Buf类中与Devtab类
 							 * 中的字段顺序能够一致，否则强制转换会出错。 */
 							 /* 缓存控制块队列勾连指针 */
-	Buf* b_forw;
+	Buf* b_forw;         /* 设备缓存队列，用来管理分配给该磁盘的所有缓存 */
 	Buf* b_back;
-	Buf* av_forw;
+	Buf* av_forw;		/* 挂IO请求队列 和 连接自由缓存队列 */
 	Buf* av_back;
 
-	short	b_dev;			/* 主、次设备号，其中高8位是主设备号，低8位是次设备号 */
+	short	b_dev;			/* 主、次设备号，其中高8位是主设备号，低8位是次设备号，不过本系统内为不同硬盘号 */
 	int		b_wcount;		/* 需传送的字节数 */
 	unsigned char* b_addr;	/* 指向该缓存控制块所管理的缓冲区的首地址 */
 	int		b_blkno;		/* 磁盘逻辑块号 */
 	int		b_error;		/* I/O出错时信息 */
 	int		b_resid;		/* I/O出错时尚未传送的剩余字节数 */
 };
-
