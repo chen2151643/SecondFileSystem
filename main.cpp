@@ -4,6 +4,8 @@
 #include "FileManager.h"
 
 char* buffer;
+#define opt_all  0x1
+#define opt_info  0x2
 /*
 * 将 name 传给 User 结构的 u_dirp，mode 传给 u_arg[1]，
 * 接着调用 FileManager::Open()，返回 u_ar0，即创建文件的fd。
@@ -91,10 +93,22 @@ int Fwrite(int fd, char* buffer, int length)
 	return u.u_ar0;
 }
 
+void show_time(int m_time)
+{
+	time_t time = m_time; // 获取最后修改时间
+	tm tm;
+	localtime_s(&tm, &time);// 使用 localtime 将时间戳转换为本地时间
+
+	// 格式化输出日期时间
+	cout << (tm.tm_year + 1900) << "-" << (tm.tm_mon + 1) << "-" << tm.tm_mday;
+	cout << " " << tm.tm_hour << ":" << tm.tm_min << ":" << tm.tm_sec;
+}
+
 /* 显示当前目录 */
-void LS()
+void LS(int opt)
 {
 	User& u = Kernel::Instance().GetUser();
+	FileManager& fmgr = Kernel::Instance().GetFileManager();
 	u.u_error = User::_NOERROR;
 	int fd = Fopen(u.u_curdir, File::FREAD);
 	char dir_read[32] = "";
@@ -103,8 +117,20 @@ void LS()
 		DirectoryEntry* cur = (DirectoryEntry*)dir_read;
 		if (cur->m_ino == 0)
 			continue;
-		//if (cur->m_name[0] != '.') 调试期间，先全部显示
-			cout << cur->m_name << endl;
+		if (opt & opt_all || cur->m_name[0] != '.') {
+			cout << left << setw(12) << cur->m_name;
+			if (opt & opt_info) {
+				DiskInode inode_ifo;
+				u.u_arg[1] = int(&inode_ifo);
+				u.u_dirp = cur->m_name;
+				fmgr.Stat();
+				cout << left << setw(3) << ((inode_ifo.d_mode & Inode::IFDIR) ? "d" : "f");
+				cout <<" bytes: " << left << setw(12) << inode_ifo.d_size;
+
+				show_time(inode_ifo.d_mtime); // 输出格式化的最后修改时间
+			}
+			cout << endl;
+		}
 
 		memset(dir_read, 0, 32);
 	}
@@ -193,6 +219,7 @@ void shutdown()
 	 * 并更新InodeTable中的内存inode节点
 	*/	
 	FileSys.Update();
+
 }
 
 /* 
@@ -216,13 +243,9 @@ void Fin(char* extername, char* intername)
 			return;
 		}
 		buffer = new char[bufferSize];
-		int i = 0;
 		while (!exterfile.eof()) {
-			i++;
-			if (i == 7)
-				i = 7;
 			exterfile.read(buffer, bufferSize);
-			streamsize bytesRead = exterfile.gcount();
+			int bytesRead = static_cast<int>(exterfile.gcount());
 			if (bytesRead > 0) {
 				Fwrite(fd, buffer, bytesRead);
 			}
@@ -269,6 +292,25 @@ void Fout(char* intername, char* extername)
 	}
 }
 
+int LS_opt(vector<string>& tokens)
+{
+	int opt = 0;
+	for (int i = 1; i < static_cast<int>(tokens.size()) && opt >= 0; i++) {
+		if (tokens[i][0] != '-') {
+			opt = -1;
+			break;
+		}
+		for (int j = 1; j < static_cast<int>(tokens[i].size()); j++) {
+			if (tokens[i][j] == 'a')
+				opt |= opt_all;
+			else if (tokens[i][j] == 'l')
+				opt |= opt_info;
+			else
+				opt = -1;
+		}
+	}
+	return opt;
+}
 
 // 解析命令的函数 return 1表示继续，0表示退出系统
 int parseCommand(const string& command) {
@@ -357,12 +399,11 @@ int parseCommand(const string& command) {
 		}
 	}
 	else if(tokens[0] == "ls"){
-		if (tokens.size() - 1 != 0) {
+		int opt = LS_opt(tokens);
+		if (opt >= 0)
+			LS(opt);
+		else
 			Utility::Usage(Utility::u_LS);
-		}
-		else {
-			LS();
-		}
 	}
 	else if (tokens[0] == "fwrite") {
 		if (tokens.size() - 1 != 3) {

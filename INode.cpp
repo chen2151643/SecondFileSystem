@@ -162,6 +162,11 @@ void Inode::IUpdate(int time)
 		 * 将该存放该DiskInode的字符块读入缓冲区 */
 		pBuf = bufMgr.Bread(this->i_dev, FileSystem::INODE_ZONE_START_SECTOR + this->i_number / FileSystem::INODE_NUMBER_PER_SECTOR);
 
+		/* 将p指向缓存区中编号为inumber外存Inode的偏移位置 */
+		unsigned char* p = pBuf->b_addr + (this->i_number % FileSystem::INODE_NUMBER_PER_SECTOR) * sizeof(DiskInode);
+		/* 将缓存中外存Inode数据拷贝到临时变量dInode中，按4字节拷贝 */
+		Utility::DWordCopy((int*)p, (int*)(&dInode), sizeof(DiskInode) / sizeof(int));
+
 		/* 将内存Inode副本中的信息复制到dInode中，然后将dInode覆盖缓存中旧的外存Inode */
 		dInode.d_mode = this->i_mode;
 		dInode.d_nlink = this->i_nlink;
@@ -176,15 +181,17 @@ void Inode::IUpdate(int time)
 		{
 			/* 更新最后访问时间 */
 			dInode.d_atime = time;
+			this->i_flag &= ~Inode::IACC;
 		}
 		if (this->i_flag & Inode::IUPD)
 		{
 			/* 更新最后访问时间 */
 			dInode.d_mtime = time;
+			this->i_flag &= ~Inode::IUPD;
 		}
 
 		/* 将p指向缓存区中旧外存Inode的偏移位置 */
-		unsigned char* p = pBuf->b_addr + (this->i_number % FileSystem::INODE_NUMBER_PER_SECTOR) * sizeof(DiskInode);
+		p = pBuf->b_addr + (this->i_number % FileSystem::INODE_NUMBER_PER_SECTOR) * sizeof(DiskInode);
 		DiskInode* pNode = &dInode;
 
 		/* 用dInode中的新数据覆盖缓存中的旧外存Inode */

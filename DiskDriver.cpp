@@ -131,63 +131,21 @@ int DiskDriver::disk_init()
 	dinode[1].d_mode |= Inode::IRWXU;
 	dinode[1].d_addr[0] = FileSystem::DATA_ZONE_END_SECTOR;
 	dinode[1].d_nlink = 1;
-	dinode[1].d_size = 4 * sizeof(DirectoryEntry);
+	dinode[1].d_size = 2 * sizeof(DirectoryEntry);
 	dinode[1].d_atime = Utility::GetTime();
 	dinode[1].d_mtime = Utility::GetTime();
 
-	DirectoryEntry dir1[4] = {
+	DirectoryEntry dir1[2] = {
 		{1,"."},
 		{1,".."},
-		{2,"home"},
-		{3,"etc"}
 	};
-	// /home目录
-	dinode[2].d_mode = Inode::IFDIR; //文件类型为目录
-	dinode[2].d_mode |= Inode::IRWXU; //对文件的执行权限
-	dinode[2].d_addr[0] = FileSystem::DATA_ZONE_END_SECTOR - 1;
-	dinode[2].d_nlink = 1;
-	dinode[2].d_size = 2 * sizeof(DirectoryEntry);
-	dinode[2].d_atime = Utility::GetTime();
-	dinode[2].d_mtime = Utility::GetTime();
-
-	DirectoryEntry dir2[2] = {
-		{2,"."},
-		{1,".."},
-	};
-	// /etc目录
-	dinode[3].d_mode = Inode::IFDIR; //文件类型为目录
-	dinode[3].d_mode |= Inode::IRWXU; //对文件的执行权限
-	dinode[3].d_addr[0] = FileSystem::DATA_ZONE_END_SECTOR - 2;
-	dinode[3].d_nlink = 1;
-	dinode[3].d_size = 3 * sizeof(DirectoryEntry);
-	dinode[3].d_atime = Utility::GetTime();
-	dinode[3].d_mtime = Utility::GetTime();
-
-	DirectoryEntry dir3[3] = {
-		{3,"."},
-		{1,".."},
-		{4,"mount.txt"}
-	};
-	// /etc/mount.txt文件
-	dinode[4].d_mode = 0; //文件类型为目录
-	dinode[4].d_mode |= Inode::IREAD; //对文件的读权限
-	dinode[4].d_mode |= Inode::IWRITE; //对文件的读权限
-	dinode[4].d_addr[0] = FileSystem::DATA_ZONE_END_SECTOR - 3;
-	dinode[4].d_nlink = 1;
-	dinode[4].d_size = 0;
-	dinode[4].d_atime = Utility::GetTime();
-	dinode[4].d_mtime = Utility::GetTime();
 
 	char* datablock = new char[FileSystem::DATA_ZONE_SIZE * 512];
 	memset(datablock, 0, FileSystem::DATA_ZONE_SIZE * 512);
 	init_datablock(datablock);
 
 	//装填初始目录文件信息
-	//inode区前2块，data区末2块
 	memcpy(datablock + 512 * (FileSystem::DATA_ZONE_SIZE - 1), dir1, dinode[1].d_size);
-	memcpy(datablock + 512 * (FileSystem::DATA_ZONE_SIZE - 2), dir2, dinode[2].d_size);
-	memcpy(datablock + 512 * (FileSystem::DATA_ZONE_SIZE - 3), dir3, dinode[3].d_size);
-	// #4号不用，因为初始为空
 
 	// 写入superblock
 	// 写入inode区
@@ -201,8 +159,9 @@ int DiskDriver::disk_init()
 
 // 由Kernel的InitDiskDriver调用
 // 进行磁盘的格式化
-void DiskDriver::Initialize()
+bool DiskDriver::Initialize()
 {
+	bool is_disk_format = true;
 	img_file.open(DiskDriver::DISK_FILE_NAME, ios::in | ios::binary);
 	// 尝试打开文件，若失败则说明未存在磁盘镜像文件，需创建并初始化
 	if (!img_file.good()) {
@@ -232,11 +191,12 @@ void DiskDriver::Initialize()
 			所以之后在完成文件读写后，需在此处补上读挂载配置文件的内容
 			主要是nblkdev的更新和new Devtab的创建，文件驱动是磁盘文件名
 		*/
-		
+		is_disk_format = false;
 		d_tab[nblkdev++] = new Devtab();
 		Utility::StringCopy(DiskDriver::DISK_FILE_NAME, tab_name[0]);
 		img_file.close();
 	}
+	return is_disk_format;
 }
 
 int DiskDriver::GetNBlkDev()

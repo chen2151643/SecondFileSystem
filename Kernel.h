@@ -22,6 +22,7 @@ private:
 	void InitFileSystem();
 private:
 	static Kernel instance; /* Kernel 单体类实例 */
+	bool is_disk_format;
 	BufferManager* m_BufferManager;
 	FileSystem* m_FileSystem;
 	FileManager* m_FileManager;

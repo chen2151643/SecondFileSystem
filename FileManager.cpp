@@ -709,10 +709,14 @@ void FileManager::UnLink()
 	Inode* pDeleteInode;
 	User& u = Kernel::Instance().GetUser();
 
-	pDeleteInode = this->NameI(FileManager::NextChar, FileManager::DELETE);
+	pDeleteInode = this->NameI(FileManager::NextChar, FileManager::DELETE); //返回父目录节点
 	if (NULL == pDeleteInode)
 	{
 		Utility::Panic("[Error:No such file]");
+		return;
+	}
+	if (FileSystem::ROOTINO == u.u_dent.m_ino) {
+		Utility::Panic("这可删不得");
 		return;
 	}
 
@@ -848,4 +852,50 @@ void FileManager::Close()
 	/* 释放打开文件描述符fd，递减File结构引用计数 */
 	u.u_ofiles.SetF(fd, NULL);
 	this->m_OpenFileTable->CloseF(pFile);
+}
+
+
+void FileManager::FStat()
+{
+	File* pFile;
+	User& u = Kernel::Instance().GetUser();
+	int fd = u.u_arg[0];
+
+	pFile = u.u_ofiles.GetF(fd);
+	if (NULL == pFile)
+	{
+		return;
+	}
+
+	/* u.u_arg[1] = pStatBuf */
+	this->Stat1(pFile->f_inode, u.u_arg[1]);
+}
+
+void FileManager::Stat()
+{
+	Inode* pInode;
+	User& u = Kernel::Instance().GetUser();
+
+	pInode = this->NameI(FileManager::NextChar, FileManager::OPEN);
+	if (NULL == pInode)
+	{
+		return;
+	}
+	this->Stat1(pInode, u.u_arg[1]);
+	this->m_InodeTable->IPut(pInode);
+}
+
+void FileManager::Stat1(Inode* pInode, unsigned long statBuf)
+{
+	Buf* pBuf;
+	BufferManager& bufMgr = Kernel::Instance().GetBufferManager();
+
+	pInode->IUpdate(Utility::GetTime());
+	pBuf = bufMgr.Bread(pInode->i_dev, FileSystem::INODE_ZONE_START_SECTOR + pInode->i_number / FileSystem::INODE_NUMBER_PER_SECTOR);
+
+	/* 将p指向缓存区中编号为inumber外存Inode的偏移位置 */
+	unsigned char* p = pBuf->b_addr + (pInode->i_number % FileSystem::INODE_NUMBER_PER_SECTOR) * sizeof(DiskInode);
+	Utility::DWordCopy((int*)p, (int*)statBuf, sizeof(DiskInode) / sizeof(int));
+
+	bufMgr.Brelse(pBuf);
 }

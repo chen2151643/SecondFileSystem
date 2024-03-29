@@ -35,7 +35,6 @@ private:
 	Buf m_Buf[NBUF];					/* 缓存控制块数组 */
 	unsigned char Buffer[NBUF][BUFFER_SIZE];	/* 缓冲区数组 */
 
-	DiskDriver* m_DiskDriver;
-//	DeviceManager* m_DeviceManager;		/* 指向设备管理模块全局对象 */
+	DiskDriver* m_DiskDriver;          /* 指向设备管理模块全局对象 */
 };
 

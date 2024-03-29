@@ -81,8 +81,8 @@ public:
 	static const int DATA_ZONE_SIZE = 18000 - DATA_ZONE_START_SECTOR;	/* 数据区占据的扇区数量 */
 
 	/* 为初始化如根目录等初始目录结构，增设参数 */
-	static const int DATA_INIT_SECTOR = 3;
-	static const int INODE_INIT_NUM = 4;
+	static const int DATA_INIT_SECTOR = 1;
+	static const int INODE_INIT_NUM = 1;
 
 
 	/* Functions */

@@ -61,11 +61,6 @@ public:
 	void Seek();
 
 	/*
-	 * @comment Dup()复制进程打开文件描述符
-	 */
-	void Dup();
-
-	/*
 	 * @comment FStat()获取文件信息
 	 */
 	void FStat();

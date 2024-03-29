@@ -24,6 +24,11 @@ public:
 * 因为没有字符设备所以把BlockDevice和DeviceManager合并
 * 二级文件系统的驱动为 镜像磁盘的文件名，可通过文件名打开对应块设备
 */
+	/* 初始化时，若不是第一次启动系统
+	*  则从/etc/mount.txt 中读挂载盘的配置信息
+	*  格式为 设备号x  disk_name
+	*  暂未实现
+	*/
 class DiskDriver
 {
 private:
@@ -38,7 +43,7 @@ public:
 	DiskDriver();
 	~DiskDriver();
 
-	void Initialize(); //初始化镜像文件
+	bool Initialize(); //初始化镜像文件
 	void IO(Buf* bp);
 	int GetNBlkDev();
 	Devtab* GetDevtab(short dev);
@@ -47,10 +52,6 @@ public:
 	static const int NODEV = -1;	/* NODEV设备号 */
 private:
 	int nblkdev;
-	/* 初始化时，若不是第一次启动系统
-	*  则从/etc/mount.txt 中读挂载盘的配置信息
-	*  格式为 设备号x  disk_name
-	*/
 	Devtab* d_tab[DISK_MAX_CNT];
 	char* tab_name[DISK_MAX_CNT]; //存放硬盘文件名，用于从硬盘中读数据
 };

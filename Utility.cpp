@@ -73,7 +73,7 @@ const char* Utility::usage[14] = {
 	"fclose\n\t Usage:fclose [fd]\n\t Description:关闭文件描述符为fd的文件\n",
 	"fread\n\t Usage:fread [fd] [length]\n\t Description:从文件描述符为fd的文件中读取length个字节，输出读取的内容\n",
 	"fwrite\n\t Usage:fwrite [fd] [string] [length]\n\t Description:向文件描述符为fd的文件写入内容为string的length个字节（不足截断，超过补0）\n",
-	"flseek\n\t Usage:fseek [fd] [offset]\n\t Description:将文件描述符为fd的文件的读写指针调整到距文件开头偏移量为offset的位置\n",
+	"fseek\n\t Usage:fseek [fd] [offset]\n\t Description:将文件描述符为fd的文件的读写指针调整到距文件开头偏移量为offset的位置\n",
 	"fcreate\n\t Usage:fcreate [name]\n\t Description:创建名为name的普通文件\n",
 	"mkdir\n\t Usage:mkdir [name]\n\t Description:创建名为name的目录文件\n",
 	"funlink\n\t Usage:funlink [name]\n\t Description:删除名为name的文件\n",

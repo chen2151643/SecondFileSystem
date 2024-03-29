@@ -361,7 +361,7 @@ void FileSystem::LoadSuperBlock()
  * @comment 将SuperBlock对象的内存副本更新到
  * 存储设备的SuperBlock中去
  * 并把Buf中延迟写的脏页全部写回
- * 并更新InodeTable中的内存inode节点
+ * 并更新InodeTable中的内存inode节点，icount!=0的同步写回
  */
 void FileSystem::Update()
 {
@@ -410,6 +410,7 @@ void FileSystem::Update()
 
 	/* 同步修改过的内存Inode到对应外存Inode */
 	g_InodeTable.UpdateInodeTable();
+
 
 	/* 将延迟写的缓存块写到磁盘上 */
 	this->m_BufferManager->Bflush(DiskDriver::NODEV);

@@ -31,6 +31,7 @@ void Kernel::Initialize()
 }
 
 /* 初始化 FileManager 及 User 中部分结构 */
+/* 以及把初始的文件结构写入，包括/home、/etc、/bin目录 */
 void Kernel::InitSystem()
 {
 	this->m_User = &g_User;
@@ -45,6 +46,18 @@ void Kernel::InitSystem()
 	strcpy_s(u->u_curdir, "/");
 	u->u_dirp = "/";
 	memset(u->u_arg, 0, sizeof(u->u_arg));
+
+	if (is_disk_format) {
+		// 若磁盘文件是初次启动经过格式化，则为其建立初始目录结构
+		u->u_arg[1] = FileManager::DEFAULT_MODE;
+		u->u_dirp = "home";
+		fileManager->MkNod();
+		u->u_dirp = "etc";
+		fileManager->MkNod();
+		u->u_dirp = "bin";
+		fileManager->MkNod();
+		Kernel::Instance().GetFileSystem().Update(); //将脏页持久化到硬盘上
+	}
 	cout << "Done" << endl;
 }
 
@@ -53,7 +66,7 @@ void Kernel::InitDiskDriver() {
 	this->m_DiskDriver = &g_DiskDriver;
 
 	cout << "Initialize Disk_img...";
-	this->GetDiskDriver().Initialize();
+	is_disk_format = this->GetDiskDriver().Initialize();
 
 	cout << "Done" << endl;
 }
