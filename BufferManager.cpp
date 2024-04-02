@@ -73,7 +73,7 @@ Buf* BufferManager::GetBlk(short dev, int blkno)
 	if (dev >= this->m_DiskDriver->GetNBlkDev())
 	{
 		//cerr << "设备号超过系统中设备数量，error" << endl;
-		Utility::Panic("设备号超过系统中设备数量，error");
+		Utility::Panic("out of dev number, error");
 	}
 	/*
 	 * 如果设备队列中已经存在相应缓存，则返回该缓存；

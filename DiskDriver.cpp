@@ -226,7 +226,7 @@ void DiskDriver::IO(Buf* bp)
 	{
 		/* 设置出错标志 */
 		bp->b_flags |= Buf::B_ERROR;
-		Utility::Panic("out of number of block，error");
+		Utility::Panic("out of number of block, error");
 	}
 	
 	/* 将bp加入I/O请求队列的队尾，此时I/O队列已经退化到单链表形式，将bp->av_forw == NULL标志着链表结尾 */
