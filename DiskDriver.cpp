@@ -171,7 +171,7 @@ bool DiskDriver::Initialize()
 		// 创建磁盘镜像文件
 		img_file.open(DiskDriver::DISK_FILE_NAME, ios::out | ios::binary);
 		if (!img_file.good()) {
-			cout << "创建磁盘文件失败，failed" << endl;
+			cout << "failed to create disk image file" << endl;
 			exit(-1);
 		}
 		// 此处为创建主硬盘的块设备表
@@ -211,7 +211,7 @@ Devtab* DiskDriver::GetDevtab(short dev)
 {
 	if (dev < 0 || dev >= this->nblkdev) {
 		//cerr << "设备号不合法" << endl;
-		Utility::Panic("设备号不合法");
+		Utility::Panic("dev number illegal");
 	}
 	return this->d_tab[dev];
 }
@@ -226,7 +226,7 @@ void DiskDriver::IO(Buf* bp)
 	{
 		/* 设置出错标志 */
 		bp->b_flags |= Buf::B_ERROR;
-		Utility::Panic("块号超过磁盘块容量，error");
+		Utility::Panic("out of number of block，error");
 	}
 	
 	/* 将bp加入I/O请求队列的队尾，此时I/O队列已经退化到单链表形式，将bp->av_forw == NULL标志着链表结尾 */
@@ -257,7 +257,7 @@ void DiskDriver::IO(Buf* bp)
 			img_file.open(tab_name[io_dev], ios::in | ios::out | ios::binary);
 
 			if (!img_file.good()) {
-				Utility::Panic("IO打开镜像磁盘文件失败\n");
+				Utility::Panic("IO failed to open disk image file\n");
 			}
 			else {
 				img_file.seekg(offset, std::ios::beg); // 从文件开头偏移

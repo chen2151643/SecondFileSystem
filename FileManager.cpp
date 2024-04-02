@@ -623,7 +623,7 @@ void FileManager::ChDir()
 	if ((pInode->i_mode & Inode::IFMT) != Inode::IFDIR)
 	{
 		u.u_error = User::_ENOTDIR;
-		Utility::Panic("不是目录文件！");
+		Utility::Panic("not a directory!");
 		this->m_InodeTable->IPut(pInode);
 		return;
 	}
@@ -656,7 +656,7 @@ void FileManager::Link()
 	if (pInode->i_nlink >= 255)
 	{
 		u.u_error = User::_EMLINK;
-		Utility::Panic("链接数量已达最大");
+		Utility::Panic("max nlink already");
 		/* 出错，释放资源并退出 */
 		this->m_InodeTable->IPut(pInode);
 		return;
@@ -677,7 +677,7 @@ void FileManager::Link()
 	if (NULL != pNewInode)
 	{
 		u.u_error = User::_EEXIST;
-		Utility::Panic("文件已存在！");
+		Utility::Panic("file already exists");
 		this->m_InodeTable->IPut(pNewInode);
 	}
 	if (User::_NOERROR != u.u_error)
@@ -716,7 +716,7 @@ void FileManager::UnLink()
 		return;
 	}
 	if (FileSystem::ROOTINO == u.u_dent.m_ino) {
-		Utility::Panic("这可删不得");
+		Utility::Panic("do not delete root");
 		return;
 	}
 

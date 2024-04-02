@@ -235,7 +235,7 @@ void Fin(char* extername, char* intername)
 	int bufferSize = 1024;
 	exterfile.open(extername, ios::in | ios::binary);
 	if (!exterfile.good()) {
-		cout << "外部文件 "<< extername <<" 打开失败" << endl;
+		cout << "failed to open outside file "<< extername  << endl;
 	}
 	else {
 		if ((fd = Fcreat(intername)) < 0) {
@@ -271,7 +271,7 @@ void Fout(char* intername, char* extername)
 	int bufferSize = 1024;
 	exterfile.open(extername, ios::out | ios::binary);
 	if (!exterfile.good()) {
-		cout << "外部文件 " << extername << " 打开失败" << endl;
+		cout << "failed to open outside file " << extername << endl;
 	}
 	else {
 		if ((fd = Fopen(intername, File::FREAD)) < 0) {
@@ -329,7 +329,7 @@ int parseCommand(const string& command) {
 	}
 	else if (tokens[0] == "exit")
 	{
-		cout << "exit强制退出系统" << endl;
+		cout << "exit system" << endl;
 		ret = 0;
 	}
 	else if (tokens[0] == "shutdown") {
@@ -346,7 +346,7 @@ int parseCommand(const string& command) {
 			if (fd >= 0)
 				cout << "fopen return fd:" << fd << endl;
 			else
-				cout << "无效 fd:" << fd << endl;
+				cout << "invalid fd:" << fd << endl;
 		}
 	}
 	else if (tokens[0] == "fcreate") {
@@ -358,7 +358,7 @@ int parseCommand(const string& command) {
 			if (fd >= 0)
 				cout << "fcreate return fd:" << fd << endl;
 			else
-				cout << "创建文件失败 fd:" << fd << endl;
+				cout << "failed to create fd:" << fd << endl;
 		}
 	}
 	else if (tokens[0] == "fclose") {
@@ -497,7 +497,7 @@ int parseCommand(const string& command) {
 		}
 	}
 	else
-		cout << "系统无此命令" << endl;
+		cout << "invalid command" << endl;
 
 	return ret;
 }

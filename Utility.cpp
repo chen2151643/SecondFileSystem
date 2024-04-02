@@ -67,6 +67,7 @@ int Utility::GetTime()
 	return intTimestamp;
 }
 
+/*
 const char* Utility::usage[14] = {
 	"ls\n\t Usage:ls\n\t Description:显示当前目录列表\n",
 	"fopen\n\t Usage:fopen [name]\n\t Description:打开名为name的文件，返回fd\n",
@@ -83,6 +84,25 @@ const char* Utility::usage[14] = {
 	"fout\n\t Usage:fout [intername] [extername]\n\t Description:将内部名为intername的文件内容存入文件系统外部名为extername的文件\n",
 	"help\n\t Usage:help\n\t Description:给出命令提示信息\n",
 };
+*/
+
+const char* Utility::usage[14] = {
+	"ls\n\t Usage: ls\n\t Description: display the list of files in the current directory\n",
+	"fopen\n\t Usage: fopen [name]\n\t Description: open the file named [name] and return the file descriptor\n",
+	"fclose\n\t Usage: fclose [fd]\n\t Description: close the file associated with file descriptor [fd]\n",
+	"fread\n\t Usage: fread [fd] [length]\n\t Description: read [length] bytes from the file associated with file descriptor [fd] and output the content\n",
+	"fwrite\n\t Usage: fwrite [fd] [string] [length]\n\t Description: write [length] bytes of [string] to the file associated with file descriptor [fd] (truncate if length exceeds, pad with 0 if less)\n",
+	"fseek\n\t Usage: fseek [fd] [offset]\n\t Description: set the read/write pointer of the file associated with file descriptor [fd] to the position [offset] from the beginning of the file\n",
+	"fcreate\n\t Usage: fcreate [name]\n\t Description: create a regular file named [name]\n",
+	"mkdir\n\t Usage: mkdir [name]\n\t Description: create a directory named [name]\n",
+	"funlink\n\t Usage: funlink [name]\n\t Description: delete the file named [name]\n",
+	"flink\n\t Usage: flink [src] [dst]\n\t Description: create a hard link from [src] to [dst]\n",
+	"cd\n\t Usage: cd [name]\n\t Description: change the current working directory to [name]\n",
+	"fin\n\t Usage: fin [extername] [intername]\n\t Description: store the content of the file with external name [extername] into the file system with internal name [intername]\n",
+	"fout\n\t Usage: fout [intername] [extername]\n\t Description: store the content of the file with internal name [intername] into the external file with name [extername]\n",
+	"help\n\t Usage: help\n\t Description: provide command prompt information\n",
+};
+
 
 void Utility::Usage(int usage_id)
 {
